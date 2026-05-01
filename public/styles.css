@@ -117,14 +117,52 @@ body {
   gap: 10px;
 }
 
-textarea {
+.chat-inputs {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-wrap {
+  position: relative;
+}
+
+textarea {
+  width: 100%;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(17, 17, 17, 0.85);
   color: var(--text);
-  padding: 12px;
+  padding: 12px 48px 12px 12px;
   resize: vertical;
+}
+
+.attach-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--accent);
+  background: rgba(245, 163, 92, 0.12);
+  border: 1px solid rgba(245, 163, 92, 0.35);
+  z-index: 2;
+}
+
+#file-input {
+  display: none;
+}
+
+.file-status {
+  min-height: 18px;
+  font-size: 12px;
 }
 
 .btn {
