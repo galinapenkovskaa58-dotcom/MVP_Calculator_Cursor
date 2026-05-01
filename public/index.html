@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Просчёт Задачи MVP</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="panel panel-left glass">
+        <div>
+          <h1 class="logo">MVP Estimate</h1>
+          <p class="subtitle">Просчёт Задачи MVP</p>
+        </div>
+        <button id="new-calc-btn" class="btn btn-primary">Новый расчёт</button>
+        <div class="history">
+          <h2>История</h2>
+          <ul id="history-list"></ul>
+        </div>
+      </aside>
+
+      <main class="panel panel-center glass">
+        <div id="chat-box" class="chat-box"></div>
+        <form id="chat-form" class="chat-form">
+          <textarea
+            id="task-input"
+            placeholder="Опишите, какую услугу нужно оценить..."
+            rows="3"
+            required
+          ></textarea>
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
+      </main>
+
+      <aside class="panel panel-right glass">
+        <h2>Результат</h2>
+        <div id="result-cards" class="result-cards">
+          <p class="muted">После расчёта здесь появится стоимость и пояснение.</p>
+        </div>
+      </aside>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
