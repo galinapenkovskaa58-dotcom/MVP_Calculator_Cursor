@@ -461,6 +461,31 @@ async function runFinalCalculation() {
   state.stage = "done";
 }
 
+async function processDetailsSubmission(text) {
+  state.stage = "details";
+  state.detailsText = text || "Подробности в прикрепленном документе";
+  appendContext(state.detailsText);
+  const filesText = await runWithStatus("Изучаю подробности...", async () => extractFilesIfPresent());
+  try {
+    const detailsAnalysis = await runWithStatus("Уточняю оценку по материалам...", async () =>
+      analyzeTask(`${state.taskText}\n\n${state.detailsText}`, filesText)
+    );
+    if (detailsAnalysis?.category) {
+      state.analysis = detailsAnalysis;
+    }
+    if (detailsAnalysis?.quantity) {
+      state.answers.quantity = detailsAnalysis.quantity;
+    }
+  } catch {
+    // Keep previous analysis if enhanced analysis fails.
+  }
+  state.stage = "questions";
+  state.questionStep = 0;
+  hydrateAnswersFromContext();
+  await addBotMessageWithDelay("Подробности получил. Задам несколько точных вопросов, чтобы не промахнуться с оценкой.");
+  await runQuestionFlow();
+}
+
 chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const text = taskInput.value.trim();
@@ -516,8 +541,12 @@ chatForm.addEventListener("submit", async (event) => {
     const normalized = text.toLowerCase();
     state.hasDetails = normalized.includes("да") || normalized.includes("есть") || hasFiles;
     if (state.hasDetails) {
-      state.stage = "details";
-      await addBotMessageWithDelay("Отлично, отправьте подробности. Я изучу материалы и перейду к точным вопросам.");
+      if (hasFiles || text) {
+        await processDetailsSubmission(text);
+      } else {
+        state.stage = "details";
+        await addBotMessageWithDelay("Отлично, отправьте подробности. Я изучу материалы и перейду к точным вопросам.");
+      }
     } else {
       state.stage = "questions";
       state.questionStep = 0;
@@ -529,27 +558,7 @@ chatForm.addEventListener("submit", async (event) => {
   }
 
   if (state.stage === "details") {
-    state.detailsText = text || "Подробности в прикрепленном документе";
-    appendContext(state.detailsText);
-    const filesText = await runWithStatus("Изучаю подробности...", async () => extractFilesIfPresent());
-    try {
-      const detailsAnalysis = await runWithStatus("Уточняю оценку по материалам...", async () =>
-        analyzeTask(`${state.taskText}\n\n${state.detailsText}`, filesText)
-      );
-      if (detailsAnalysis?.category) {
-        state.analysis = detailsAnalysis;
-      }
-      if (detailsAnalysis?.quantity) {
-        state.answers.quantity = detailsAnalysis.quantity;
-      }
-    } catch {
-      // Keep previous analysis if enhanced analysis fails.
-    }
-    state.stage = "questions";
-    state.questionStep = 0;
-    hydrateAnswersFromContext();
-    await addBotMessageWithDelay("Подробности получил. Задам несколько точных вопросов, чтобы не промахнуться с оценкой.");
-    await runQuestionFlow();
+    await processDetailsSubmission(text);
     return;
   }
 
@@ -607,6 +616,11 @@ taskInput?.addEventListener("keydown", (event) => {
     const after = taskInput.value.slice(end);
     taskInput.value = `${before}\n${after}`;
     taskInput.selectionStart = taskInput.selectionEnd = start + 1;
+    return;
+  }
+
+  const hasText = taskInput.value.trim().length > 0;
+  if (!hasText) {
     return;
   }
 
